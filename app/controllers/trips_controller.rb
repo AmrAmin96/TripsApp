@@ -71,7 +71,7 @@ class TripsController < ApplicationController
     current_status_index = Trip::STATUSES.index(trip.current_status)
     new_status_index = Trip::STATUSES.index(params[:status])
 
-    if new_status_index.nil?
+    if new_status_index.blank?
       render json: { error: "That's not a valid status." }, status: :unprocessable_entity 
     elsif current_status_index == new_status_index
       render json: { message: "Same Status"}, status: :ok
@@ -91,14 +91,14 @@ class TripsController < ApplicationController
     if trip.status == "ongoing"
       location_diff_variable = 0.00083 # difference of 0.05 seconds between the last location and current location
 
-      if (params[:latitude].nil? || params[:longitude].nil?) # Driver didn't send one of them
+      if (params[:latitude].blank? || params[:longitude].blank?) # Driver didn't send one of them
         render json: { error: "Longitude or Latitude can't be empty." }, status: :unprocessable_entity 
       # in this case if the driver is in the same position and didn't move or moved a little displacement no need to update specially the api is sent every 5 seconds
-      elsif (trip.current_location[:longitude] - params[:longitude].to_f).abs < location_diff_variable && (trip.current_location[:latitude] - params[:latitude].to_f).abs < location_diff_variable
+      elsif trip.locations.any? && ((trip.current_location[:longitude] - params[:longitude].to_f).abs < location_diff_variable && (trip.current_location[:latitude] - params[:latitude].to_f).abs < location_diff_variable)
         render json: { message: "Same Location"}, status: :ok  # successed but without updating cuz same location
       else
         # schedule job to be performed async
-        TrackingJob.perform_async(params[:id],params[:latitude], params[:longitude])
+        TrackingJob.perform_async(params[:id].to_i,params[:latitude].to_f, params[:longitude].to_f)
         render json: { message: "Location updated successfully!"}, status: :ok 
       end
     elsif trip.status == "canceled"
