@@ -7,6 +7,7 @@
 7 - Api for submit_location to update current location of the driver or of the trip 
 8 - worker for updating current location usinng sidekiq
 9 - caching current location and current status so that if they are not changed the cached value is returned without hitting the db 
+10 - testing submit location api with all its cases using rspec unit test
 
 Explaination:
 In this code i generated the models where users has many trips and trip has only one user , same with vehicle 
